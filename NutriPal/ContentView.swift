@@ -1,24 +1,58 @@
-//
-//  ContentView.swift
-//  NutriPal
-//
-//  Created by Dhruv Suhird on 6/24/25.
-//
-
 import SwiftUI
 
 struct ContentView: View {
-    var body: some View {
-        VStack {
-            Image(systemName: "globe")
-                .imageScale(.large)
-                .foregroundStyle(.tint)
-            Text("Hello, world!")
-        }
-        .padding()
-    }
-}
+    @EnvironmentObject var mealLogVM: MealLogViewModel
+    @EnvironmentObject var dashboardVM: MacroDashboardViewModel
+    @EnvironmentObject var userVM: UserProfileViewModel
+    @EnvironmentObject var historyVM: IntakeHistoryViewModel
 
-#Preview {
-    ContentView()
+    var body: some View {
+        TabView {
+            NavigationStack {
+                MacroDashboardView(dashboardVM: dashboardVM)
+            }
+            .tabItem {
+                Label("Dashboard", systemImage: "house")
+            }
+            
+            NavigationStack {
+                MealLogView()
+            }
+            .tabItem {
+                Label("Meal Log", systemImage: "fork.knife")
+            }
+            
+            NavigationStack {
+                FoodSearchView()
+            }
+            .tabItem {
+                Label("Search", systemImage: "magnifyingglass")
+            }
+
+            NavigationStack {
+                HistoryView()
+            }
+            .tabItem {
+                Label("History", systemImage: "calendar")
+            }
+            
+            NavigationStack {
+                SettingsView()
+            }
+            .tabItem {
+                Label("Settings", systemImage: "gearshape")
+            }
+        }
+        .onAppear {
+            // Initial loading and cross-VM updates
+            mealLogVM.load()
+//            dashboardVM.updateLoggedFoods(mealLogVM.loggedFoods)
+            historyVM.load(from: mealLogVM.loggedFoods)
+        }
+        .onChange(of: mealLogVM.loggedFoods) { newLoggedFoods in
+//            dashboardVM.updateLoggedFoods(newLoggedFoods)
+            historyVM.load(from: newLoggedFoods)
+        }
+        .tint(Color(hex: "#2a477a"))
+    }
 }
